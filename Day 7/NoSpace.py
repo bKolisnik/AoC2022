@@ -7,13 +7,8 @@ class Folder:
         self.total_size = 0
         self.child_file_size = 0
 
-def postorder_get_folder_sizes(root,max_folder_size=float('inf')):
-    #as you come up the dfs set the folder sizes, keep track of folders
-    
-    #get the total sum of all of the folder sizes that are at most max_folder_size
-    if root is None:
-        return 0
-    
+
+def get_post_order_output_stack(root):
     input_stack = deque() # this stack will be used to traverse the tree
     output_stack = deque() # this stack will store the output
     input_stack.append(root)
@@ -24,6 +19,49 @@ def postorder_get_folder_sizes(root,max_folder_size=float('inf')):
 
         for child in curr.children:
             input_stack.append(curr.children[child])
+    return output_stack
+
+def create_tree(lines):
+    f = None
+
+    root = None
+    visited = deque()
+    for line in lines:
+        if line[0:4] == "$ cd":
+
+            dir_name = line.split(" ", 2)[-1]
+            if dir_name == "/":
+                f = Folder()
+                root = f
+                visited.append(f)
+            elif dir_name == ".." and len(visited) > 1:
+                visited.pop()
+                f = visited[-1]
+            elif dir_name == ".." and len(visited) == 1:
+                f = visited[-1]
+            elif dir_name != "..":
+                f = f.children[dir_name]
+                visited.append(f)
+
+
+        elif line[0].isdigit():
+            file_size = int(line.split(" ", 1)[0])
+            f.child_file_size += file_size
+
+        elif line[0:3] == "dir":
+            child_dir = line.split(" ", 1)[1]
+            f.children[child_dir] = Folder()
+
+    return root
+
+def postorder_get_folder_sizes(root,max_folder_size=float('inf')):
+    #as you come up the postorder search set the folder sizes, keep track of folders
+    
+    #get the total sum of all of the folder sizes that are at most max_folder_size
+    if root is None:
+        return 0
+    
+    output_stack = get_post_order_output_stack(root)
 
     total_folder_sizes = 0
     while output_stack:
@@ -48,27 +86,15 @@ def postorder_get_folder_sizes(root,max_folder_size=float('inf')):
 
     return total_folder_sizes
 
-def postorder_delete_smallest_to_make_space(root):
+def postorder_delete_smallest_to_make_space(root,min_disk_space = 30000000, total_disk_space = 70000000):
     #as you come up the dfs set the folder sizes, keep track of folders
     
     #get the total sum of all of the folder sizes that are at most max_folder_size
     if root is None:
         return 0
     
-    input_stack = deque() # this stack will be used to traverse the tree
-    output_stack = deque() # this stack will store the output
-    input_stack.append(root)
-    while input_stack:
+    output_stack = get_post_order_output_stack(root)
 
-        curr = input_stack.pop()
-        output_stack.append(curr)
-
-        for child in curr.children:
-            input_stack.append(curr.children[child])
-
-
-    min_disk_space = 30000000
-    total_disk_space = 70000000
     min_folder_size_large_enough = float('inf')
 
     #need total used space and then
@@ -103,73 +129,15 @@ def postorder_delete_smallest_to_make_space(root):
 
 
 def no_space(lines):
-    #do a bfs on the tree
     #first construct the tree
-    f = None
-
-    root = None
-    visited = deque()
-    for line in lines:
-        if line[0:4] == "$ cd":
-
-            dir_name = line.split(" ", 2)[-1]
-            if dir_name == "/":
-                f = Folder()
-                root = f
-                visited.append(f)
-            elif dir_name == ".." and len(visited) > 1:
-                visited.pop()
-                f = visited[-1]
-            elif dir_name == ".." and len(visited) == 1:
-                f = visited[-1]
-            elif dir_name != "..":
-                f = f.children[dir_name]
-                visited.append(f)
-
-
-        elif line[0].isdigit():
-            file_size = int(line.split(" ", 1)[0])
-            f.child_file_size += file_size
-
-        elif line[0:3] == "dir":
-            child_dir = line.split(" ", 1)[1]
-            f.children[child_dir] = Folder()
-
+    root = create_tree(lines)
 
     #now we have a tree starting from root we need to construct the file sizes
     return postorder_get_folder_sizes(root,max_folder_size=100000)
 
 
 def no_space2(lines):
-    f = None
-
-    root = None
-    visited = deque()
-    for line in lines:
-        if line[0:4] == "$ cd":
-
-            dir_name = line.split(" ", 2)[-1]
-            if dir_name == "/":
-                f = Folder()
-                root = f
-                visited.append(f)
-            elif dir_name == ".." and len(visited) > 1:
-                visited.pop()
-                f = visited[-1]
-            elif dir_name == ".." and len(visited) == 1:
-                f = visited[-1]
-            elif dir_name != "..":
-                f = f.children[dir_name]
-                visited.append(f)
-
-
-        elif line[0].isdigit():
-            file_size = int(line.split(" ", 1)[0])
-            f.child_file_size += file_size
-
-        elif line[0:3] == "dir":
-            child_dir = line.split(" ", 1)[1]
-            f.children[child_dir] = Folder()
+    root = create_tree(lines)
 
     return postorder_delete_smallest_to_make_space(root)
     
