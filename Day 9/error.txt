@@ -1,0 +1,11 @@
+....H.
+....1.
+.5432.
+.6....
+7.....
+
+the issues begins with the 5 knot since 4 will be moved to (2,2) and 5 is at (0,0)
+
+so displacement ois (2,2)
+
+final displacement vector should be 1,1 for 5 but isntead it will be (1,2) based on the order of the if statements.
