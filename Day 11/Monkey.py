@@ -1,5 +1,6 @@
 import os
 from collections import deque, defaultdict
+import copy
 #hardcoding monkeys
 
 class Monkey():
@@ -40,23 +41,21 @@ def monkey_in_middle(monkeys,max_round = 20):
             second_max_count = monkey_business[key]
     return max_count*second_max_count
 
-def monkey_in_middle2(monkeys,max_round = 10000):
+def monkey_in_middle2(monkeys,product_of_all_divisors,max_round = 10000):
 
     round = 0
     monkey_business = defaultdict(int)
     while round < max_round:
-        monkey_queue = deque(monkeys)
-        monkey_index = 0
-        while monkey_queue:
-            monkey = monkey_queue.popleft()
+
+        for i in range(len(monkeys)):
+            monkey = monkeys[i]
             while monkey.items:
                 old_worry = monkey.items.popleft()
-                monkey_business[monkey_index] += 1
-                new_worry = monkey.operation(old_worry)
+                monkey_business[i] += 1
+                new_worry = monkey.operation(old_worry) % product_of_all_divisors
                 next_monkey_index = monkey.test(new_worry)
                 monkeys[next_monkey_index].items.append(new_worry)
 
-            monkey_index +=1
         round+=1
 
     #get two max item numbers counted
@@ -180,7 +179,17 @@ def tester7(worry):
     else:
         return 5
 
+# This function computes GCD 
+def compute_gcd(x, y):
 
+   while(y):
+       x, y = y, x % y
+   return x
+
+# This function computes LCM
+def compute_lcm(x, y):
+   lcm = (x*y)//compute_gcd(x,y)
+   return lcm
 
 if __name__ == "__main__":
     #TESTDATA_FILENAME = os.path.join(os.path.dirname(__file__), "input.txt")
@@ -190,6 +199,7 @@ if __name__ == "__main__":
     #m3 = Monkey(deque([74]),op3,test3)
 
     #monkeys_list = [m0,m1,m2,m3]
+    #product_of_all_divisors = 23*19*13*17
 
     m0 = Monkey(deque([98,89,52]),oper0,tester0)
     m1 = Monkey(deque([57, 95, 80, 92, 57, 78]),oper1,tester1)
@@ -200,7 +210,23 @@ if __name__ == "__main__":
     m6 = Monkey(deque([61,54,94,71,74,68,98,83]),oper6,tester6)
     m7 = Monkey(deque([90, 56]),oper7,tester7)
 
-    monkeys_list = [m0,m1,m2,m3, m4, m5, m6, m7]
-    print(monkey_in_middle(monkeys_list))
-    print(monkey_in_middle2(monkeys_list))
+    product_of_all_divisors = 5*2*19*7*17*13*3*11
 
+    monkeys_list = [m0,m1,m2,m3, m4, m5, m6, m7]
+    monkeys_list2 = copy.deepcopy(monkeys_list)
+    print(monkey_in_middle(monkeys_list))
+    print(monkey_in_middle2(monkeys_list2,product_of_all_divisors))
+
+#since all of the numbers are prime numbers the lcm of all of the numbers is the product of all of the numbers
+#lcm(a,b) = a*b / gcd(a,b)
+    '''
+91238 % 5 = 3
+91238 % 7 = 0
+
+91238 % (5 * 7) = 28
+28 % 5 = 3
+28 % 7 = 0'''
+
+#30494497320 too low
+
+#defaultdict(<class 'int'>, {0: 2, 1: 4, 2: 3, 3: 5})
